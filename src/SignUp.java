@@ -248,7 +248,24 @@ public class SignUp extends JFrame{
 			if(event.getSource()==complete)//회원가입
 			{
 				
-				//TODO : DB에 회원가입 요청
+				if(!id.getText().equals("") && !pw.getText().equals("") && !pw_confirm.getText().equals("") && !fname.getText().equals("") 
+						&& !lname.getText().equals("") && !phone.getText().equals(""))//필수 정보 입력 여부 
+				{
+					if(pw.getText().equals(pw_confirm.getText()))//비번과 비번확인 같아야함
+					{
+						//TODO : DB에 회원가입 요청
+					}
+					else//비번과 비번확인 다르면 경고
+					{
+						JOptionPane.showMessageDialog(null, "비밀번호가 같지 않습니다");
+						return ;
+					}
+				}
+				else// 필수 정보 입력 안하면 경고
+				{
+					JOptionPane.showMessageDialog(null, "필수 입력 정보를 입력해주세요");
+					return ;
+				}
 			}
 			else//취소 일 땐 아무것도 안함
 			{
