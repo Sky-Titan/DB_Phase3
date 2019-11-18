@@ -253,7 +253,7 @@ public class SignUp extends JFrame{
 				{
 					if(pw.getText().equals(pw_confirm.getText()))//비번과 비번확인 같아야함
 					{
-						//TODO : DB에 회원가입 요청
+						//TODO : DB에 이미 존재하는 회원인지 먼저 확인 후 가입(account에 insert) 요청
 					}
 					else//비번과 비번확인 다르면 경고
 					{
