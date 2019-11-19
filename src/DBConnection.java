@@ -19,6 +19,226 @@ public class DBConnection {
 	
 	}
 	
+	//차량 매물등록
+	public static boolean insertVehicles(String serialnumber, String mileage, String model, String detailed_model, String price, String model_year, String fuel, String color, String capacity
+			,String ishybrid, String isopen)
+	{
+		connect();
+		
+		boolean result = false;
+		//서버에 확인
+		try
+		{
+			
+			String sql = "INSERT INTO VEHICLE VALUES('"+serialnumber+"', "+mileage+", '"+model+"', '"+detailed_model+"', "+price+", "+model_year+", '"+fuel+"', '"+color+"', "+capacity+", '"+ishybrid+"', '"+isopen+"')";
+			int res = stmt.executeUpdate(sql);
+			
+			if(res > 0) 
+			{
+				result=true;
+				System.out.println("Tuple was successfully inserted.");
+			}
+			else
+			{
+				result=false;
+			}
+			conn.commit();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+		return result;
+	}
+	//배기량 전체리스트불러오기
+	public static String[] selectCapacity()
+	{
+		String[] result=null;
+		connect();
+		
+		try
+		{
+			String sql;
+			
+			sql = "SELECT CAPACITY FROM ENGINE_DISPLACEMENT";
+			
+			
+			ResultSet rs = stmt.executeQuery(sql);
+			int i=0;
+			ResultSetMetaData rsmd = rs.getMetaData();
+			
+			rs.last();
+			
+			result = new String[rs.getRow()];
+			rs.beforeFirst();
+			while(rs.next())
+			{
+				result[i] = rs.getString(1);
+				i++;
+			}
+			rs.close();
+			
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+		return result;
+	}
+	//색상 전체리스트불러오기
+	public static String[] selectColor()
+	{
+		String[] result=null;
+		connect();
+		
+		try
+		{
+			String sql;
+			
+			sql = "SELECT COLORNAME FROM COLOR";
+			
+			
+			ResultSet rs = stmt.executeQuery(sql);
+			int i=0;
+			ResultSetMetaData rsmd = rs.getMetaData();
+			
+			rs.last();
+			
+			result = new String[rs.getRow()];
+			rs.beforeFirst();
+			while(rs.next())
+			{
+				result[i] = rs.getString(1);
+				i++;
+			}
+			rs.close();
+			
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+		return result;
+	}
+	//연료 전체리스트불러오기
+	public static String[] selectFuel()
+	{
+		String[] result=null;
+		connect();
+		
+		try
+		{
+			String sql;
+			
+			sql = "SELECT FUELNAME FROM FUEL";
+			
+			
+			ResultSet rs = stmt.executeQuery(sql);
+			int i=0;
+			ResultSetMetaData rsmd = rs.getMetaData();
+			
+			rs.last();
+			
+			result = new String[rs.getRow()];
+			rs.beforeFirst();
+			while(rs.next())
+			{
+				result[i] = rs.getString(1);
+				i++;
+			}
+			rs.close();
+			
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+		return result;
+	}
+	
+	//세부모델 전체리스트불러오기
+	public static String[] selectDetailedModel(String modelname)
+	{
+		String[] result=null;
+		connect();
+		
+		try
+		{
+			String sql;
+			
+			sql = "SELECT DETAILEDMODELNAME FROM DETAILED_MODEL WHERE MODELNAME = '"+modelname+"'";
+			
+			
+			ResultSet rs = stmt.executeQuery(sql);
+			int i=0;
+			ResultSetMetaData rsmd = rs.getMetaData();
+			
+			rs.last();
+			
+			result = new String[rs.getRow()];
+			rs.beforeFirst();
+			while(rs.next())
+			{
+				result[i] = rs.getString(1);
+				i++;
+			}
+			rs.close();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();	
+		return result;
+	}
+	
+	//모델 전체리스트불러오기
+	public static String[] selectModel()
+	{
+		String[] result=null;
+		connect();
+		
+		try
+		{
+			String sql;
+			
+			sql = "SELECT MODELNAME FROM MODEL";
+			
+			
+			ResultSet rs = stmt.executeQuery(sql);
+			int i=0;
+			ResultSetMetaData rsmd = rs.getMetaData();
+			
+			rs.last();
+			
+			result = new String[rs.getRow()];
+			rs.beforeFirst();
+			while(rs.next())
+			{
+				result[i] = rs.getString(1);
+				i++;
+			}
+			rs.close();
+			
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+		return result;
+	}
+	
 	//거래내역불러오기
 	public static String[][] selectOrderlist(String id, boolean isAdmin)
 	{
@@ -48,13 +268,13 @@ public class DBConnection {
 				{
 					if(j==6 || j==1)
 					{
-						System.out.println(rs.getString(j+1));
+						//System.out.println(rs.getString(j+1));
 						StringTokenizer strtok = new StringTokenizer(rs.getString(j+1)," ");
 						result[i][j] = strtok.nextToken();
 					}
 					else if(j==9)
 					{
-						System.out.println(rs.getString(j+1));
+						//System.out.println(rs.getString(j+1));
 						if(rs.getString(j+1).equals("1"))
 							result[i][j] = "O";
 						else
@@ -62,7 +282,7 @@ public class DBConnection {
 					}
 					else
 					{
-						System.out.println(rs.getString(j+1));
+						//System.out.println(rs.getString(j+1));
 						result[i][j] = rs.getString(j+1);
 					}
 				}
@@ -82,7 +302,7 @@ public class DBConnection {
 	}
 	
 	//매물불러옴
-	public static String[][] selectVehicles()
+	public static String[][] selectVehicles(boolean isAdmin)
 	{
 		String[][] result = null;
 		
@@ -96,24 +316,25 @@ public class DBConnection {
 			ResultSetMetaData rsmd = rs.getMetaData();
 			
 			rs.last();
+			int column = rsmd.getColumnCount();
 			
-			result = new String[rs.getRow()][rsmd.getColumnCount()];
+			if(!isAdmin)//고객모드때
+				column-=1;
+			
+			result = new String[rs.getRow()][column];
 			rs.beforeFirst();
 			while(rs.next())
 			{
-				for(int j=0;j<rsmd.getColumnCount();j++)
+				for(int j=0;j<column;j++)
 				{
+					//System.out.println(rs.getString(j+1));
 					if(j==5)
 					{
-						System.out.println(rs.getString(j+1));
 						StringTokenizer strtok = new StringTokenizer(rs.getString(j+1)," ");
 						result[i][j] = strtok.nextToken();
-						
-						
 					}
 					else if(j==9)
 					{
-						System.out.println(rs.getString(j+1));
 						if(rs.getString(j+1).equals("1"))
 							result[i][j] = "O";
 						else
@@ -121,8 +342,15 @@ public class DBConnection {
 					}
 					else
 					{
-						System.out.println(rs.getString(j+1));
 						result[i][j] = rs.getString(j+1);
+					}
+					
+					if(j==10 && isAdmin==true)//공개여부는 관리자일때만
+					{
+						if(rs.getString(j+1).equals("1"))
+							result[i][j] = "O";
+						else
+							result[i][j] = "X";
 					}
 				}
 				i++;

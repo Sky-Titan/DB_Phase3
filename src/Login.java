@@ -84,7 +84,7 @@ public class Login extends JFrame{
 			{
 				
 				new SignUp();
-				setVisible(false);
+				dispose();
 			}
 			else if(event.getSource()==signin)//로그인
 			{
@@ -113,7 +113,7 @@ public class Login extends JFrame{
 							new AccountMenu(id.getText(), false);
 						}
 						//메뉴 창으로 이동
-						setVisible(false);
+						dispose();
 					}
 					else
 					{

@@ -89,8 +89,8 @@ public class AccountMenu extends JFrame{
 				//탈퇴
 				if(connection.deleteAccount(id))
 				{
-					setVisible(false);
 					new Login();
+					dispose();
 				}
 				else
 				{
@@ -102,16 +102,18 @@ public class AccountMenu extends JFrame{
 			{
 				//매물창
 				new VehicleTable(id, isAdmin);
+				dispose();
 			}
 			else if(event.getSource() == orderlist)//거래내역보기
 			{
 				//거래내역 창
 				new OrderlistTable(id, isAdmin);
+				dispose();
 			}
 			else if(event.getSource() == logout)//로그아웃
 			{
-				setVisible(false);
 				new Login();
+				dispose();
 			}
 		}
 	}

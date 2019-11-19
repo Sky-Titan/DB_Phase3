@@ -1,9 +1,15 @@
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
+
+
 
 public class OrderlistTable extends JFrame{
 	
@@ -13,6 +19,7 @@ public class OrderlistTable extends JFrame{
 	private String[][] data;
 	private JTable table;
 	private JScrollPane scrollPane;
+	private JButton back;
 	
 	public OrderlistTable(String id,boolean isAdmin)
 	{
@@ -32,6 +39,10 @@ public class OrderlistTable extends JFrame{
 		setSize(1200, 600);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLayout(null);
+
+		back = new JButton("뒤로 가기");
+		back.setBounds(950, 30, 150, 30);
+		add(back);
 		
 		DBConnection connection = new DBConnection();
 		
@@ -49,7 +60,22 @@ public class OrderlistTable extends JFrame{
 		scrollPane.setBounds(100, 100, 1000, 400);
 		add(scrollPane);
 		
+		Handler h = new Handler();
+		back.addActionListener(h);
+		
 		setVisible(true);
 	}
 
+	private class Handler implements ActionListener
+	{
+		@Override
+		public void actionPerformed(ActionEvent event)
+		{
+			if(event.getSource()==back)//뒤로가기
+			{
+				new AccountMenu(id, isAdmin);
+				dispose();
+			}
+		}
+	}
 }

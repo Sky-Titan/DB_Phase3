@@ -369,7 +369,7 @@ public class SignUp extends JFrame{
 				
 			}
 			new Login();
-			setVisible(false);
+			dispose();
 		}
 	}
 }
