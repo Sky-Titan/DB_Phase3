@@ -1,8 +1,10 @@
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.StringTokenizer;
 
 public class DBConnection {
 	public static final String URL = "jdbc:oracle:thin:@155.230.36.61:1521:orcl";
@@ -15,6 +17,127 @@ public class DBConnection {
 	public DBConnection()
 	{
 	
+	}
+	
+	//거래내역불러오기
+	public static String[][] selectOrderlist(String id, boolean isAdmin)
+	{
+		String[][] result = null;
+		
+		connect();
+		
+		try
+		{
+			String sql;
+			if(isAdmin)//관리자인 경우
+				sql = "SELECT * FROM ORDER_LIST";
+			else//고객인 경우
+				sql = "SELECT * FROM ORDER_LIST WHERE BUYERID ='"+id+"'";
+			
+			ResultSet rs = stmt.executeQuery(sql);
+			int i=0;
+			ResultSetMetaData rsmd = rs.getMetaData();
+			
+			rs.last();
+			
+			result = new String[rs.getRow()][rsmd.getColumnCount()];
+			rs.beforeFirst();
+			while(rs.next())
+			{
+				for(int j=0;j<rsmd.getColumnCount();j++)
+				{
+					if(j==6 || j==1)
+					{
+						System.out.println(rs.getString(j+1));
+						StringTokenizer strtok = new StringTokenizer(rs.getString(j+1)," ");
+						result[i][j] = strtok.nextToken();
+					}
+					else if(j==9)
+					{
+						System.out.println(rs.getString(j+1));
+						if(rs.getString(j+1).equals("1"))
+							result[i][j] = "O";
+						else
+							result[i][j] = "X";
+					}
+					else
+					{
+						System.out.println(rs.getString(j+1));
+						result[i][j] = rs.getString(j+1);
+					}
+				}
+				i++;
+			}
+			rs.close();
+			
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+		
+		return result;
+	}
+	
+	//매물불러옴
+	public static String[][] selectVehicles()
+	{
+		String[][] result = null;
+		
+		connect();
+		
+		try
+		{
+			String sql = "SELECT * FROM VEHICLE";
+			ResultSet rs = stmt.executeQuery(sql);
+			int i=0;
+			ResultSetMetaData rsmd = rs.getMetaData();
+			
+			rs.last();
+			
+			result = new String[rs.getRow()][rsmd.getColumnCount()];
+			rs.beforeFirst();
+			while(rs.next())
+			{
+				for(int j=0;j<rsmd.getColumnCount();j++)
+				{
+					if(j==5)
+					{
+						System.out.println(rs.getString(j+1));
+						StringTokenizer strtok = new StringTokenizer(rs.getString(j+1)," ");
+						result[i][j] = strtok.nextToken();
+						
+						
+					}
+					else if(j==9)
+					{
+						System.out.println(rs.getString(j+1));
+						if(rs.getString(j+1).equals("1"))
+							result[i][j] = "O";
+						else
+							result[i][j] = "X";
+					}
+					else
+					{
+						System.out.println(rs.getString(j+1));
+						result[i][j] = rs.getString(j+1);
+					}
+				}
+				i++;
+			}
+			rs.close();
+			
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+		
+		return result;
 	}
 	
 	//현재 서버의 admin 계정 개수
@@ -313,7 +436,7 @@ public class DBConnection {
 		try {
 			conn.setAutoCommit(false); // auto-commit disabled  
 			// Create a statement object
-			stmt = conn.createStatement();
+			stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
 		}
 		catch (Exception e) {
 			// TODO: handle exception

@@ -105,7 +105,8 @@ public class AccountMenu extends JFrame{
 			}
 			else if(event.getSource() == orderlist)//거래내역보기
 			{
-				//TODO : 거래내역 창
+				//거래내역 창
+				new OrderlistTable(id, isAdmin);
 			}
 			else if(event.getSource() == logout)//로그아웃
 			{

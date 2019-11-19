@@ -5,18 +5,18 @@ import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
 
-public class VehicleTable extends JFrame{
+public class OrderlistTable extends JFrame{
 	
 	private String id;
 	private boolean isAdmin;
-	private String[] header = {"차량 번호","주행거리(km)","모델","세부모델","가격(원)","연식","연료","색상","배기량(cc)","하이브리드"};
+	private String[] header = {"거래 번호","거래 날짜","구매자ID","모델","세부모델","가격(원)","연식","연료","색상","하이브리드"};
 	private String[][] data;
 	private JTable table;
 	private JScrollPane scrollPane;
 	
-	public VehicleTable(String id, boolean isAdmin)
+	public OrderlistTable(String id,boolean isAdmin)
 	{
-		super("매물정보");
+		super("거래 내역");
 		this.id = id;
 		this.isAdmin = isAdmin;
 		
@@ -35,7 +35,7 @@ public class VehicleTable extends JFrame{
 		
 		DBConnection connection = new DBConnection();
 		
-		data = connection.selectVehicles();
+		data = connection.selectOrderlist(id, isAdmin);
 		
 		DefaultTableModel model = new DefaultTableModel(data, header){ public boolean isCellEditable(int i, int c){ return false; } };//편집불가
 		
