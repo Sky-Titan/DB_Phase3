@@ -17,6 +17,98 @@ public class DBConnection {
 	
 	}
 	
+	public static String[] selectAccountInfo(String id)
+	{
+		String[] results = {"","","","","","","","","","","",""};
+		int count=0;
+		connect();
+		//서버에 확인
+		try
+		{
+			String sql = "SELECT * FROM ACCOUNT WHERE ID = '"+id+"'";
+			ResultSet rs = stmt.executeQuery(sql);
+			
+			while(rs.next())
+			{
+				// Fill out your code
+				results[0] = rs.getString(1);//아이디
+				for(int i=0;i<results.length;i++)
+				{	
+					results[i] = rs.getString(i+1);
+					System.out.println(results[i]);
+				}
+			}
+			rs.close();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+		
+		return results;
+	}
+	
+	public static boolean deleteAccount(String id)
+	{
+		connect();
+		
+		boolean result = false;
+		//서버에 확인
+		try
+		{
+			
+			String sql = "DELETE FROM ACCOUNT WHERE ID = '"+id+"'";
+			int res = stmt.executeUpdate(sql);
+			
+			if(res > 0) 
+			{
+				result=true;
+				System.out.println("Tuple was successfully inserted.");
+			}
+			else
+			{
+				result=false;
+			}
+			conn.commit();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+		return result;
+	}
+	
+	//관리자 계정인지 확인
+	public static boolean isAdmin(String id)
+	{
+		boolean result=false;
+		connect();
+		//서버에 확인
+		try
+		{
+			String sql = "SELECT KIND FROM ACCOUNT WHERE ID = '"+id+"'";
+			ResultSet rs = stmt.executeQuery(sql);
+			while(rs.next())
+			{
+				if(rs.getString(1).equals("Admin"))
+					result = true;
+				else
+					result = false;
+			}
+			rs.close();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+		return result;
+	}
 	public static boolean isMember(String id) //해당 id 존재하는지 확인
 	{
 		boolean result=false;

@@ -102,7 +102,16 @@ public class Login extends JFrame{
 					System.out.println(password.getText()+" "+results[1]);
 					if(password.getText().equals(results[1]))
 					{
-						//TODO : 회원 관리 창으로 이동
+						if(connection.isAdmin(id.getText()) == true)
+						{
+							//TODO : 관리자메뉴 띄우기
+						}
+						else
+						{
+							//고객 메뉴 띄우기
+							new CustomerMenu(id.getText());
+						}
+						//메뉴 창으로 이동
 						setVisible(false);
 					}
 					else
