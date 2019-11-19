@@ -102,14 +102,15 @@ public class Login extends JFrame{
 					System.out.println(password.getText()+" "+results[1]);
 					if(password.getText().equals(results[1]))
 					{
-						if(connection.isAdmin(id.getText()) == true)
+						if(connection.isAdmin(id.getText()) == true)//관리자인지 확인
 						{
-							//TODO : 관리자메뉴 띄우기
+							//관리자메뉴 띄우기
+							new AccountMenu(id.getText(), true);
 						}
 						else
 						{
 							//고객 메뉴 띄우기
-							new CustomerMenu(id.getText());
+							new AccountMenu(id.getText(), false);
 						}
 						//메뉴 창으로 이동
 						setVisible(false);

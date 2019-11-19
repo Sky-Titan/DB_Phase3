@@ -2,6 +2,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.StringTokenizer;
 import java.util.TimeZone;
 
 import javax.swing.DefaultComboBoxModel;
@@ -104,19 +105,15 @@ public class AccountModification extends JFrame{
 		add(phone_label);
 		
 		phone = new JTextField(20);
+		phone.setDocument(new IntegerDocument());
 		phone.setText(accountInfo[5]);
 		phone.setBounds(start_width, start_height+390, 210, 30);
-		phone.setDocument(new IntegerDocument());
 		add(phone);
 		
 		bdate_label = new JLabel("생년월일 : ");
 		bdate_label.setBounds(start_width, start_height+420, 80, 30);
 		add(bdate_label);
 		
-		if(accountInfo[6]!=null)
-		{
-		//TODO:생년월일 파싱 후 지정
-		}
 		ArrayList<String> years = new ArrayList<String>();
 		years.add("");//생년월일은 추가입력정보라 입력 안할 수도 있음
 		for(int i = 1950; i<=2000;i++)
@@ -205,12 +202,25 @@ public class AccountModification extends JFrame{
 			}
 		});
 		
+		if(accountInfo[6]!=null)
+		{
+			//TODO:생년월일 파싱 후 지정
+			StringTokenizer strtok = new StringTokenizer(accountInfo[6],"-");
+			String temp_year = strtok.nextToken();
+			String temp_month = Integer.parseInt(strtok.nextToken())+"";
+			String temp_day = Integer.parseInt(strtok.nextToken())+"";
+			b_year.setSelectedItem(temp_year);
+			b_month.setSelectedItem(temp_month);
+			b_day.setSelectedItem(temp_day);
+		}
+		
 		gender_label = new JLabel("성별 : ");
 		gender_label.setBounds(start_width, start_height+480, 80, 30);
 		add(gender_label);
 		
 		String[] genders = {"","Female","Male"};
 		gender = new JComboBox<String>(genders);
+		gender.setSelectedItem(accountInfo[7]);
 		gender.setBounds(start_width, start_height+510, 100, 30);
 		add(gender);
 		
@@ -219,6 +229,7 @@ public class AccountModification extends JFrame{
 		add(job_label);
 		
 		job = new JTextField(20);
+		job.setText(accountInfo[8]);
 		job.setBounds(start_width, start_height+570, 210, 30);
 		add(job);
 		
@@ -227,6 +238,7 @@ public class AccountModification extends JFrame{
 		add(country_label);
 		
 		country = new JTextField(20);
+		country.setText(accountInfo[9]);
 		country.setBounds(start_width, start_height+630, 210, 30);
 		add(country);
 		
@@ -235,6 +247,7 @@ public class AccountModification extends JFrame{
 		add(city_label);
 		
 		city = new JTextField(20);
+		city.setText(accountInfo[10]);
 		city.setBounds(start_width, start_height+690, 210, 30);
 		add(city);
 		
@@ -243,6 +256,7 @@ public class AccountModification extends JFrame{
 		add(detail_address_label);
 		
 		detail_address = new JTextField(30);
+		detail_address.setText(accountInfo[11]);
 		detail_address.setBounds(start_width, start_height+750, 210, 30);
 		add(detail_address);
 		
@@ -333,7 +347,7 @@ public class AccountModification extends JFrame{
 						DBConnection connection = new DBConnection();
 						
 						
-						boolean result2 = connection.;
+						boolean result2 = connection.updateAccount(id, pwString, fnameString, lnameString, phoneString, kindString, bdate, genderString, jobString, countryString, cityString, detailAddressString);
 						if(result2 == true)//회원정보 수정 완료
 						{
 							//아무것도 안함

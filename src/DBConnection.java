@@ -17,6 +17,35 @@ public class DBConnection {
 	
 	}
 	
+	//현재 서버의 admin 계정 개수
+	public static int countAdminAccount()
+	{
+		int result=0;
+		connect();
+		//서버에 확인
+		try
+		{
+			String sql = "SELECT COUNT(*) FROM ACCOUNT WHERE KIND = 'Admin'";
+			ResultSet rs = stmt.executeQuery(sql);
+			
+			while(rs.next())
+			{
+				result = rs.getInt(1);
+			}
+			rs.close();
+			
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+		
+		return result;
+	}
+	
+	//회원정보 불러오기
 	public static String[] selectAccountInfo(String id)
 	{
 		String[] results = {"","","","","","","","","","","",""};
@@ -34,9 +63,22 @@ public class DBConnection {
 				results[0] = rs.getString(1);//아이디
 				for(int i=0;i<results.length;i++)
 				{	
-					results[i] = rs.getString(i+1);
-					System.out.println(results[i]);
+					if(i!=6)//생일만 제외
+					{
+						results[i] = rs.getString(i+1);
+						System.out.println(results[i]);
+					}
 				}
+			}
+			rs.close();
+			
+			sql = "SELECT TO_CHAR(BDATE,'YYYY-MM-DD') FROM ACCOUNT WHERE ID = '"+id+"'";
+			rs = stmt.executeQuery(sql);
+			
+			while(rs.next())
+			{
+				// Fill out your code
+				results[6] = rs.getString(1);//생일
 			}
 			rs.close();
 		}
@@ -50,6 +92,7 @@ public class DBConnection {
 		return results;
 	}
 	
+	//회원탈퇴
 	public static boolean deleteAccount(String id)
 	{
 		connect();
@@ -109,6 +152,7 @@ public class DBConnection {
 		disconnect();
 		return result;
 	}
+	
 	public static boolean isMember(String id) //해당 id 존재하는지 확인
 	{
 		boolean result=false;
@@ -135,6 +179,43 @@ public class DBConnection {
 		
 		disconnect();
 		return result;
+	}
+	
+	//회원정보 수정
+	public static boolean updateAccount(String id, String pw, String fname, String lname, String phone, String kind,
+				String bdate, String gender, String job, String country, String city, String detail_address)
+	{
+		connect();
+			
+		boolean result = false;
+		//서버에 확인
+		try
+		{
+			
+			String sql = "UPDATE ACCOUNT SET PASSWORD = '"+pw+"', FNAME = '"+fname+"', LNAME = '"+lname+"', KIND = '"+kind+"', PHONENUMBER = '"+phone+"', "
+					+"BDATE ="+bdate+", GENDER ="+gender+", JOB ="+job+", COUNTRY = "+country+", CITY = "+city+", DETAILADDRESS ="+detail_address+" "
+					+ " WHERE ID = '"+id+"'";
+			int res = stmt.executeUpdate(sql);
+			
+			if(res > 0) 
+			{
+				result=true;
+				System.out.println("Tuple was successfully inserted.");
+			}
+			else
+			{
+				result=false;
+			}
+			conn.commit();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+		return result;
+			
 	}
 	
 	//account 테이블에 tuple 추가(회원가입)

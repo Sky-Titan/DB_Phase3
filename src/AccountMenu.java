@@ -7,17 +7,17 @@ import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
 
-public class CustomerMenu extends JFrame{
+public class AccountMenu extends JFrame{
 
-	private JButton modifyInfo, deleteAccount, vehicles, orderlist;
+	private JButton modifyInfo, deleteAccount, vehicles, orderlist, logout;
 	private String id;
+	private boolean isAdmin;
 	
-	
-	public CustomerMenu(String id) {
-		super("고객 메뉴 "+id);
+	public AccountMenu(String id,boolean isAdmin) {
+		super("회원 메뉴 "+id);
 		
 		this.id = id;
-		
+		this.isAdmin = isAdmin;
 		try
 		 {
 			   UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
@@ -27,7 +27,7 @@ public class CustomerMenu extends JFrame{
 		 }
 		setLocation(800, 200);
 		//getContentPane().setBackground(Color.white);
-		setSize(300, 300);
+		setSize(300, 350);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLayout(null);
 		
@@ -47,12 +47,16 @@ public class CustomerMenu extends JFrame{
 		orderlist.setBounds(75, 200, 150, 30);
 		add(orderlist);
 		
+		logout = new JButton("로그아웃");
+		logout.setBounds(75, 250, 150, 30);
+		add(logout);
+		
 		Handler h=new Handler();
 		modifyInfo.addActionListener(h);
 		deleteAccount.addActionListener(h);
 		vehicles.addActionListener(h);
 		orderlist.addActionListener(h);
-		
+		logout.addActionListener(h);
 		setVisible(true);
 	}
 	
@@ -64,13 +68,25 @@ public class CustomerMenu extends JFrame{
 			if(event.getSource()==modifyInfo)//회원정보수정
 			{
 				
-				//TODO : 회원정보수정창
+				//회원정보수정창
+				new AccountModification(id);
 				
 			}
 			else if(event.getSource()==deleteAccount)//회원 탈퇴
 			{
 				//회원탈퇴 시키기
 				DBConnection connection = new DBConnection();
+				if(isAdmin)//관리자 계정은 관리자 계정 최소 1개이상 존재하는지 체크
+				{
+					if(connection.countAdminAccount() <= 1)//현재 서버에 관리자계정 1개 이하인 경우 탈퇴 불가
+					{
+						JOptionPane.showMessageDialog(null, "관리자 계정은 최소 1개이상이여야합니다");
+						return ;
+					}
+					
+				}
+				
+				//탈퇴
 				if(connection.deleteAccount(id))
 				{
 					setVisible(false);
@@ -84,11 +100,17 @@ public class CustomerMenu extends JFrame{
 			}
 			else if(event.getSource() == vehicles)//매물보기
 			{
-				//TODO : 매물창
+				//매물창
+				new VehicleTable(id, isAdmin);
 			}
 			else if(event.getSource() == orderlist)//거래내역보기
 			{
 				//TODO : 거래내역 창
+			}
+			else if(event.getSource() == logout)//로그아웃
+			{
+				setVisible(false);
+				new Login();
 			}
 		}
 	}
