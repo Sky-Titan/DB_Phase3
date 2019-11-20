@@ -18,6 +18,40 @@ public class DBConnection {
 	{
 	
 	}
+	//차량 정보수정
+	public static boolean updateVehicles(String serialnumber, String mileage, String model, String detailed_model, String price, String model_year, String fuel, String color, String capacity
+			,String ishybrid, String isopen)
+	{
+		connect();
+		
+		boolean result = false;
+		//서버에 확인
+		try
+		{
+			
+			String sql = "UPDATE VEHICLE SET MILEAGE = "+mileage+", MODELNAME='"+model+"', DETAILEDMODELNAME='"+detailed_model+"', PRICE="+price+", MODEL_YEAR="+model_year+", FUELNAME='"+fuel+"', COLORNAME='"+color+"', CAPACITY="+capacity+", ISHYBRID='"+ishybrid+"', ISOPEN='"+isopen+"'"
+					+ " WHERE SERIALNUMBER = '"+serialnumber+"'";
+			int res = stmt.executeUpdate(sql);
+			
+			if(res > 0) 
+			{
+				result=true;
+				System.out.println("Tuple was successfully updated.");
+			}
+			else
+			{
+				result=false;
+			}
+			conn.commit();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+		return result;
+	}
 	
 	//차량 매물등록
 	public static boolean insertVehicles(String serialnumber, String mileage, String model, String detailed_model, String price, String model_year, String fuel, String color, String capacity
@@ -52,6 +86,7 @@ public class DBConnection {
 		disconnect();
 		return result;
 	}
+	
 	//배기량 전체리스트불러오기
 	public static String[] selectCapacity()
 	{
@@ -310,7 +345,11 @@ public class DBConnection {
 		
 		try
 		{
-			String sql = "SELECT * FROM VEHICLE";
+			String sql;
+			if(!isAdmin)//고객일때
+				sql = "SELECT v.serialnumber, v.mileage, v.modelname, v.detailedmodelname, v.price, v.model_year, v.fuelname, v.colorname, v.capacity, v.ishybrid, v.isopen, m.makename, dm.categoryname, dm.fuelefficiency, dm.transmissionname FROM VEHICLE V, DETAILED_MODEL DM, MODEL M WHERE V.MODELNAME = M.MODELNAME AND V.DETAILEDMODELNAME = DM.DETAILEDMODELNAME AND V.MODELNAME = DM.MODELNAME AND V.ISOPEN ='1' ORDER BY v.serialnumber ASC";//공개처리된애들만 불러옴
+			else//관리자일땐 전체 다불러옴
+				sql = "SELECT v.serialnumber, v.mileage, v.modelname, v.detailedmodelname, v.price, v.model_year, v.fuelname, v.colorname, v.capacity, v.ishybrid, v.isopen, m.makename, dm.categoryname, dm.fuelefficiency, dm.transmissionname FROM VEHICLE V, DETAILED_MODEL DM, MODEL M WHERE V.MODELNAME = M.MODELNAME AND V.DETAILEDMODELNAME = DM.DETAILEDMODELNAME AND V.MODELNAME = DM.MODELNAME ORDER BY v.serialnumber ASC";
 			ResultSet rs = stmt.executeQuery(sql);
 			int i=0;
 			ResultSetMetaData rsmd = rs.getMetaData();
@@ -325,9 +364,10 @@ public class DBConnection {
 			rs.beforeFirst();
 			while(rs.next())
 			{
+			
 				for(int j=0;j<column;j++)
 				{
-					//System.out.println(rs.getString(j+1));
+					System.out.println(rs.getString(j+1));
 					if(j==5)
 					{
 						StringTokenizer strtok = new StringTokenizer(rs.getString(j+1)," ");
@@ -339,7 +379,7 @@ public class DBConnection {
 							result[i][j] = "O";
 						else
 							result[i][j] = "X";
-					}
+					}	
 					else
 					{
 						result[i][j] = rs.getString(j+1);
@@ -352,9 +392,12 @@ public class DBConnection {
 						else
 							result[i][j] = "X";
 					}
+					
+					
 				}
 				i++;
 			}
+				
 			rs.close();
 			
 		}
@@ -367,6 +410,78 @@ public class DBConnection {
 		
 		return result;
 	}
+	
+	//특정 차량 정보만 불러옴
+	public static String[] selectVehicles(boolean isAdmin, String serialnumber)
+	{
+		String[] result = null;
+		
+		connect();
+		
+		try
+		{
+			String sql = "SELECT * FROM VEHICLE WHERE SERIALNUMBER = '"+serialnumber+"'";
+			ResultSet rs = stmt.executeQuery(sql);
+		
+			ResultSetMetaData rsmd = rs.getMetaData();
+			
+			rs.last();
+			int column = rsmd.getColumnCount();
+			
+			if(!isAdmin)//고객모드때
+				column-=1;
+				
+			result = new String[column];
+			rs.beforeFirst();
+			while(rs.next())
+			{
+					
+				for(int j=0;j<column;j++)
+				{
+					//System.out.println(rs.getString(j+1));
+					
+					if(j==5)
+					{
+						StringTokenizer strtok = new StringTokenizer(rs.getString(j+1)," ");
+						result[j] = strtok.nextToken();
+					}
+					else if(j==9)
+					{
+						if(rs.getString(j+1).equals("1"))
+							result[j] = "O";
+						else
+							result[j] = "X";
+					}
+					else
+					{
+						result[j] = rs.getString(j+1);
+					}
+					
+					if(j==10 && isAdmin==true)//공개여부는 관리자일때만
+					{
+						if(rs.getString(j+1).equals("1"))
+							result[j] = "O";
+						else
+							result[j] = "X";
+					}
+					
+					
+					
+				}
+				
+			}
+			rs.close();
+			
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+			
+		return result;
+	}	
 	
 	//현재 서버의 admin 계정 개수
 	public static int countAdminAccount()
