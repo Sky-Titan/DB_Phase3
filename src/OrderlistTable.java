@@ -2,7 +2,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -20,6 +22,9 @@ public class OrderlistTable extends JFrame{
 	private JTable table;
 	private JScrollPane scrollPane;
 	private JButton back;
+
+	private JButton sales_btn;
+
 	
 	public OrderlistTable(String id,boolean isAdmin)
 	{
@@ -35,7 +40,6 @@ public class OrderlistTable extends JFrame{
 		 {
 		 }
 		setLocation(500, 200);
-		//getContentPane().setBackground(Color.white);
 		setSize(1200, 600);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLayout(null);
@@ -45,6 +49,15 @@ public class OrderlistTable extends JFrame{
 		add(back);
 		
 		DBConnection connection = new DBConnection();
+		Handler h = new Handler();
+		
+		if(isAdmin)
+		{
+			sales_btn = new JButton("매출액 보기");
+			sales_btn.setBounds(1100-310, 30, 150, 30);
+			add(sales_btn);
+			sales_btn.addActionListener(h);
+		}
 		
 		data = connection.selectOrderlist(id, isAdmin);
 		
@@ -60,7 +73,7 @@ public class OrderlistTable extends JFrame{
 		scrollPane.setBounds(100, 100, 1000, 400);
 		add(scrollPane);
 		
-		Handler h = new Handler();
+		
 		back.addActionListener(h);
 		
 		setVisible(true);
@@ -75,6 +88,11 @@ public class OrderlistTable extends JFrame{
 			{
 				new AccountMenu(id, isAdmin);
 				dispose();
+			}
+			else if(event.getSource()==sales_btn)
+			{
+				new ShowSales(id, isAdmin);
+				//dispose();
 			}
 		}
 	}

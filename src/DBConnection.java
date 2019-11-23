@@ -18,6 +18,46 @@ public class DBConnection {
 	{
 	
 	}
+	
+	public static String[] selectMakes()
+	{
+		String[] result=null;
+		
+		connect();
+		
+		try
+		{
+			String sql;
+			
+			sql = "SELECT MAKENAME FROM MAKE";
+			
+			
+			ResultSet rs = stmt.executeQuery(sql);
+			int i=0;
+			ResultSetMetaData rsmd = rs.getMetaData();
+			
+			rs.last();
+			
+			result = new String[rs.getRow()+1];
+			result[i++] = "전체";
+			rs.beforeFirst();
+			while(rs.next())
+			{
+				result[i] = rs.getString(1);
+				i++;
+			}
+			rs.close();
+			
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+		return result;
+	}
+	
 	//차량 정보수정
 	public static boolean updateVehicles(String serialnumber, String mileage, String model, String detailed_model, String price, String model_year, String fuel, String color, String capacity
 			,String ishybrid, String isopen)
