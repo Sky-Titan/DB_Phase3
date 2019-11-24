@@ -18,7 +18,181 @@ public class DBConnection {
 	{
 	
 	}
-	
+	// 2-B (classify makename)
+		public static String[][] selectVehiclesByMakename(String makename, boolean isAdmin)
+		{
+			String[][] result = null;
+			
+			connect();
+			
+			try
+			{
+				String sql;
+	            // print makename X
+				if(!isAdmin)
+					sql = "SELECT V.serialnumber, V.mileage, V.modelname, V.detailedmodelname, " + 
+	                    "V.price, V.model_year, V.fuelname, V.colorname, V.capacity, V.ishybrid, " +
+	                    "m.makename, d.categoryname, d.fuelefficiency, d.transmissionname " + 
+	                    "from vehicle V, detailed_model D, model M " + 
+	                    "where V.modelname = D.modelname AND " + 
+	                    "V.detailedmodelname = D.detailedmodelname AND " + 
+	                    "D.modelname = M.modelname AND " + 
+	                    "M.makename = " + makename + " AND " +
+	                    "V.isopen = '1'";
+				else
+					sql = "SELECT V.serialnumber, V.mileage, V.modelname, V.detailedmodelname, " + 
+	                    "V.price, V.model_year, V.fuelname, V.colorname, V.capacity, V.ishybrid, " +
+	                    "V.isopen, m.makename, dm.categoryname, dm.fuelefficiency, dm.transmissionname " + 
+	                    "from vehicle V, detailed_model D, model M " + 
+	                    "where V.modelname = D.modelname AND " + 
+	                    "V.detailedmodelname = D.detailedmodelname AND " + 
+	                    "D.modelname = M.modelname AND " + 
+	                    "M.makename = " + makename; 
+				ResultSet rs = stmt.executeQuery(sql);
+				int i=0;
+				ResultSetMetaData rsmd = rs.getMetaData();
+				
+				rs.last();
+				int column = rsmd.getColumnCount();
+				
+				if(!isAdmin)
+					column-=1;
+				
+				result = new String[rs.getRow()][column];
+				rs.beforeFirst();
+				while(rs.next())
+				{
+				
+					for(int j=0;j<column;j++)
+					{
+						//System.out.println(rs.getString(j+1));
+						if(j==5)
+						{
+							StringTokenizer strtok = new StringTokenizer(rs.getString(j+1)," ");
+							result[i][j] = strtok.nextToken();
+						}
+						else if(j==9)
+						{
+							if(rs.getString(j+1).equals("1"))
+								result[i][j] = "O";
+							else
+								result[i][j] = "X";
+						}	
+						else
+						{
+							result[i][j] = rs.getString(j+1);
+						}
+						
+						if(j==10 && isAdmin==true)
+						{
+							if(rs.getString(j+1).equals("1"))
+								result[i][j] = "O";
+							else
+								result[i][j] = "X";
+						}
+					}
+					i++;
+	                //System.out.println(result[i][j]);
+				}
+					
+				rs.close();
+				
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+			
+			disconnect();
+			
+			return result;
+		}
+
+	    // 2-F (classify modelname&detailedmodelname)
+		public static String[][] selectVehiclesBymodelname(String modelname, String detailedmodelname, boolean isAdmin)
+		{
+			String[][] result = null;
+			
+			connect();
+			
+			try
+			{
+				String sql;
+	            // print makename X
+				if(!isAdmin)
+					sql = "SELECT V.serialnumber, V.mileage, V.modelname, V.detailedmodelname, " + 
+	                    "V.price, V.model_year, V.fuelname, V.colorname, V.capacity, V.ishybrid, " +
+	                    "m.makename, d.categoryname, d.fuelefficiency, d.transmissionname " + 
+	                    "from vehicle V, detailed_model D, model M  " + 
+	                    "where V.modelname = " + modelname + " AND " +
+	                    "V.detailedmodelname = " + detailedmodelname + " AND D.detailedmodelname = V.detailedmodelname AND M.modelname = V.modelname AND " +
+	                    "V.isopen = '1'";
+				else
+					sql = "SELECT V.serialnumber, V.mileage, V.modelname, V.detailedmodelname, " + 
+	                    "V.price, V.model_year, V.fuelname, V.colorname, V.capacity, V.ishybrid, " +
+	                    "V.isopen , m.makename, d.categoryname, d.fuelefficiency, d.transmissionname " + 
+	                    "from vehicle V , detailed_model D, model M  " + 
+	                    "where V.modelname = " + modelname + " AND " +
+	                    "V.detailedmodelname = " + detailedmodelname+ " AND D.detailedmodelname = V.detailedmodelname AND M.modelname = V.modelname"; 
+				ResultSet rs = stmt.executeQuery(sql);
+				int i=0;
+				ResultSetMetaData rsmd = rs.getMetaData();
+				
+				rs.last();
+				int column = rsmd.getColumnCount();
+				
+				if(!isAdmin)
+					column-=1;
+				
+				result = new String[rs.getRow()][column];
+				rs.beforeFirst();
+				while(rs.next())
+				{
+				
+					for(int j=0;j<column;j++)
+					{
+						//System.out.println(rs.getString(j+1));
+						if(j==5)
+						{
+							StringTokenizer strtok = new StringTokenizer(rs.getString(j+1)," ");
+							result[i][j] = strtok.nextToken();
+						}
+						else if(j==9)
+						{
+							if(rs.getString(j+1).equals("1"))
+								result[i][j] = "O";
+							else
+								result[i][j] = "X";
+						}	
+						else
+						{
+							result[i][j] = rs.getString(j+1);
+						}
+						
+						if(j==10 && isAdmin==true)
+						{
+							if(rs.getString(j+1).equals("1"))
+								result[i][j] = "O";
+							else
+								result[i][j] = "X";
+						}
+					}
+					i++;
+	                //System.out.println(result[i][j]);
+				}
+					
+				rs.close();
+				
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+			
+			disconnect();
+			
+			return result;
+		}
 	public static String[] selectMakes()
 	{
 		String[] result=null;
@@ -313,7 +487,43 @@ public class DBConnection {
 		disconnect();
 		return result;
 	}
-	
+	//모델 전체리스트불러오기
+		public static String[] selectModel(String make)
+		{
+			String[] result=null;
+			connect();
+			
+			try
+			{
+				String sql;
+				
+				sql = "SELECT MODELNAME FROM MODEL WHERE MAKENAME = '"+make+"'";
+				
+				
+				ResultSet rs = stmt.executeQuery(sql);
+				int i=0;
+				ResultSetMetaData rsmd = rs.getMetaData();
+				
+				rs.last();
+				
+				result = new String[rs.getRow()];
+				rs.beforeFirst();
+				while(rs.next())
+				{
+					result[i] = rs.getString(1);
+					i++;
+				}
+				rs.close();
+				
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+			
+			disconnect();
+			return result;
+		}
 	//거래내역불러오기
 	public static String[][] selectOrderlist(String id, boolean isAdmin)
 	{
