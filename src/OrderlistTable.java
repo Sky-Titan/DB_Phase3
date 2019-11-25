@@ -92,7 +92,7 @@ public class OrderlistTable extends JFrame{
 			else if(event.getSource()==sales_btn)
 			{
 				new ShowSales(id, isAdmin);
-				//dispose();
+				dispose();
 			}
 		}
 	}

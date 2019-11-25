@@ -23,7 +23,7 @@ public class VehicleTable extends JFrame{
 	private String[][] data;
 	private JTable table;
 	private JScrollPane scrollPane;
-	private JButton back,search;
+	private JButton back,search,condition_search;
 	private JButton buy;//구매버튼
 	private JButton register, modify;//차량 등록, 수정, 공개
 	private JComboBox<String> make, model, detailed_model;
@@ -150,6 +150,11 @@ public class VehicleTable extends JFrame{
 		search.setBounds(570, 30, 150, 30);
 		add(search);
 		search.addActionListener(h);
+		
+		condition_search = new JButton("조건 검색하기");
+		condition_search.setBounds(730, 30, 150, 30);
+		add(condition_search);
+		condition_search.addActionListener(h);
 		
 		back = new JButton("뒤로 가기");
 		back.setBounds(950, 30, 150, 30);
@@ -368,6 +373,10 @@ public class VehicleTable extends JFrame{
 			    table.getColumn("연비(km)").setPreferredWidth(50);
 			    
 				table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);//단일 선택모드
+			}
+			else if(event.getSource()==condition_search)//조건별 검색
+			{
+				new ConditionSearch(id, isAdmin, table);
 			}
 		}
 	}

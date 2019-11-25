@@ -4,7 +4,9 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Calendar;
 import java.util.StringTokenizer;
+import java.util.TimeZone;
 
 public class DBConnection {
 	public static final String URL = "jdbc:oracle:thin:@155.230.36.61:1521:orcl";
@@ -17,6 +19,237 @@ public class DBConnection {
 	public DBConnection()
 	{
 	
+	}
+	// 3-D (search total_sales by year, month, makename)
+    // input : year, month, makename
+    // output : one total_sales
+	public static long selectTotalsalesBy(String year, String month, String makename)
+	{
+		connect();
+		
+		long totalSales=0;
+
+		try
+		{
+			TimeZone timeZone = TimeZone.getTimeZone("Asia/Seoul");
+			Calendar cal = Calendar.getInstance(timeZone);
+			cal.set(Integer.parseInt(year), Integer.parseInt(month)-1, 1);
+			int end_day = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+            // select
+			String sql = "select sum(O.price) as total_sales " +
+                "from order_list O, detailed_model D, model M " +
+                "where O.modelname = D.modelname AND " +
+                "O.detailedmodelname = D.detailedmodelname AND " +
+                "D.modelname = M.modelname AND " +
+                "M.makename = '" + makename + "' AND " +
+                "orderdate >= to_date('" + year + month + "01', 'yyyy-mm-dd') AND " +
+                "orderdate <= to_date('" + year + month + end_day+"', 'yyyy-mm-dd') " +
+                "group by M.makename";
+			ResultSet rs = stmt.executeQuery(sql);
+			
+            // return value
+			if(rs.next())
+            {
+				totalSales = rs.getLong(1);
+            }
+
+            /*
+			if(res > 0){ 
+				result=true;
+				System.out.println("Tuple was successfully updated.");
+			}else
+				result=false;
+            */
+
+			conn.commit();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+		return totalSales;
+	}
+
+    // input : makename
+    // output : one total_sales
+	public static long selectTotalsalesBy(String makename)
+	{
+		connect();
+		
+		long totalSales=0;
+
+		try
+		{
+            // select
+			String sql = "select sum(O.price) as total_sales " +
+                "from order_list O, detailed_model D, model M " +
+                "where O.modelname = D.modelname AND " +
+                "O.detailedmodelname = D.detailedmodelname AND " +
+                "D.modelname = M.modelname AND " +
+                "M.makename = '" + makename + "' " +
+                "group by M.makename";
+			ResultSet rs = stmt.executeQuery(sql);
+			
+            // return value
+
+			if(rs.next())
+            totalSales = rs.getLong(1);
+
+            /*
+			if(res > 0){ 
+				result=true;
+				System.out.println("Tuple was successfully updated.");
+			}else
+				result=false;
+            */
+
+			conn.commit();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+		return totalSales;
+	}
+
+    // input : year
+    // output : one total_sales
+	public static long selectTotalsalesByYear(String year)
+	{
+		connect();
+		
+		long totalSales=0;
+
+		try
+		{
+            // select
+			String sql = "select sum(O.price) as total_sales " +
+                "from order_list O, detailed_model D, model M " +
+                "where O.modelname = D.modelname AND " +
+                "O.detailedmodelname = D.detailedmodelname AND " +
+                "D.modelname = M.modelname AND " +
+                "orderdate >= to_date('" + year + "0101', 'yyyy-mm-dd') AND " +
+                "orderdate <= to_date('" + year + "1231', 'yyyy-mm-dd')";
+			ResultSet rs = stmt.executeQuery(sql);
+			
+            // return value
+			if(rs.next())
+            totalSales = rs.getLong(1);
+
+            /*
+			if(res > 0){ 
+				result=true;
+				System.out.println("Tuple was successfully updated.");
+			}else
+				result=false;
+            */
+
+			conn.commit();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+		return totalSales;
+	}
+
+    // input : year, month
+    // output : one total_sales
+	public static long selectTotalsalesByYearMonth(String year, String month)
+	{
+		connect();
+		
+		long totalSales=0;
+
+		try
+		{
+			TimeZone timeZone = TimeZone.getTimeZone("Asia/Seoul");
+			Calendar cal = Calendar.getInstance(timeZone);
+			cal.set(Integer.parseInt(year), Integer.parseInt(month)-1, 1);
+			int end_day = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+			
+            // select
+			String sql = "select sum(O.price) as total_sales " +
+                "from order_list O, detailed_model D, model M " +
+                "where O.modelname = D.modelname AND " +
+                "O.detailedmodelname = D.detailedmodelname AND " +
+                "D.modelname = M.modelname AND " +
+                "orderdate >= to_date('" + year + month + "01', 'yyyy-mm-dd') AND " +
+                "orderdate <= to_date('" + year + month + end_day+"', 'yyyy-mm-dd')";
+			ResultSet rs = stmt.executeQuery(sql);
+			
+            // return value
+			if(rs.next())
+            totalSales = rs.getLong(1);
+
+            /*
+			if(res > 0){ 
+				result=true;
+				System.out.println("Tuple was successfully updated.");
+			}else
+				result=false;
+            */
+
+			conn.commit();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+		return totalSales;
+	}
+
+    // input : year, makename
+    // output : one total_sales
+	public static long selectTotalsalesBy(String year, String makename)
+	{
+		connect();
+		
+		long totalSales=0;
+
+		try
+		{
+            // select
+			String sql = "select sum(O.price) as total_sales " +
+                "from order_list O, detailed_model D, model M " +
+                "where O.modelname = D.modelname AND " +
+                "O.detailedmodelname = D.detailedmodelname AND " +
+                "D.modelname = M.modelname AND " +
+                "orderdate >= to_date('" + year + "0101', 'yyyy-mm-dd') AND " +
+                "orderdate <= to_date('" + year +"1231', 'yyyy-mm-dd') AND " +
+                "M.makename = '" + makename + "' " +
+                "group by M.makename";
+			ResultSet rs = stmt.executeQuery(sql);
+			
+            // return value
+			if(rs.next())
+            totalSales = rs.getLong(1);
+
+            /*
+			if(res > 0){ 
+				result=true;
+				System.out.println("Tuple was successfully updated.");
+			}else
+				result=false;
+            */
+
+			conn.commit();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+		return totalSales;
 	}
 	
 	// 2-E (vehicle->order_list)
@@ -83,7 +316,7 @@ public class DBConnection {
 			else
 				sql = "SELECT V.serialnumber, V.mileage, V.modelname, V.detailedmodelname, " + 
 	                  "V.price, V.model_year, V.fuelname, V.colorname, V.capacity, V.ishybrid, " +
-	                  "V.isopen, m.makename, dm.categoryname, dm.fuelefficiency, dm.transmissionname " + 
+	                  "V.isopen, m.makename, d.categoryname, d.fuelefficiency, d.transmissionname " + 
 	                  "from vehicle V, detailed_model D, model M " + 
 	                  "where V.modelname = D.modelname AND " + 
 	                  "V.detailedmodelname = D.detailedmodelname AND " + 
@@ -319,7 +552,44 @@ public class DBConnection {
 		
 		return result;
 	}
-	
+	public static String[] selectCategories()
+	{
+		String[] result=null;
+		
+		connect();
+		
+		try
+		{
+			String sql;
+			
+			sql = "SELECT Categoryname FROM CATEGORY";
+			
+			
+			ResultSet rs = stmt.executeQuery(sql);
+			int i=0;
+			ResultSetMetaData rsmd = rs.getMetaData();
+			
+			rs.last();
+			
+			result = new String[rs.getRow()+1];
+			result[i++] = "전체";
+			rs.beforeFirst();
+			while(rs.next())
+			{
+				result[i] = rs.getString(1);
+				i++;
+			}
+			rs.close();
+			
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+		return result;
+	}
 	public static String[] selectMakes()
 	{
 		String[] result=null;
@@ -465,6 +735,44 @@ public class DBConnection {
 		disconnect();
 		return result;
 	}
+	
+	public static String[] selectTransmission()
+	{
+		String[] result=null;
+		connect();
+		
+		try
+		{
+			String sql;
+			
+			sql = "SELECT TRANSMISSIONNAME FROM TRANSMISSION";
+			
+			
+			ResultSet rs = stmt.executeQuery(sql);
+			int i=0;
+			ResultSetMetaData rsmd = rs.getMetaData();
+			
+			rs.last();
+			
+			result = new String[rs.getRow()];
+			rs.beforeFirst();
+			while(rs.next())
+			{
+				result[i] = rs.getString(1);
+				i++;
+			}
+			rs.close();
+			
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+		return result;
+	}
+	
 	//색상 전체리스트불러오기
 	public static String[] selectColor()
 	{
