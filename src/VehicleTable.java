@@ -1,5 +1,7 @@
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Calendar;
+import java.util.TimeZone;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -192,6 +194,8 @@ public class VehicleTable extends JFrame{
 		buy.setBounds(440, 520, 150, 30);
 		add(buy);
 		
+		buy.addActionListener(h);
+		
 		if(!isAdmin)//고객모드일땐 버튼 숨김
 		{
 			register.setVisible(false);
@@ -213,6 +217,7 @@ public class VehicleTable extends JFrame{
 		@Override
 		public void actionPerformed(ActionEvent event)
 		{
+			DBConnection connection = new DBConnection();
 			if(event.getSource()==back)//뒤로가기
 			{
 				//setVisible(false);
@@ -249,8 +254,65 @@ public class VehicleTable extends JFrame{
 				{
 					int row = table.getSelectedRow();
 					String vehicleNumber = String.valueOf(table.getValueAt(row, 0));
-					//TODO : 구매처리
 					
+					TimeZone timeZone = TimeZone.getTimeZone("Asia/Seoul");
+					Calendar cal = Calendar.getInstance(timeZone);
+					
+					String year = cal.get(Calendar.YEAR)+"";
+					String month = String.valueOf(cal.get(Calendar.MONTH)+1);
+					String day = String.valueOf(cal.get(Calendar.DAY_OF_MONTH));
+					System.out.println(year+" "+month+" "+day);
+					String orderdate ="TO_DATE('"+year+"-"+month+"-"+day+"', 'yyyy-mm-dd')";
+					String buyerId = id;
+					String model = String.valueOf(table.getValueAt(row, 2));
+					String detailed_model = String.valueOf(table.getValueAt(row, 3));
+					String price = String.valueOf(table.getValueAt(row, 4));
+					String model_year = "TO_DATE('"+String.valueOf(table.getValueAt(row, 5))+"', 'yyyy-mm-dd')";
+					String fuel = String.valueOf(table.getValueAt(row, 6));
+					String color = String.valueOf(table.getValueAt(row, 7));
+					String ishybrid;
+					
+					if(String.valueOf(table.getValueAt(row, 9)).equals("O"))
+						ishybrid = "1";
+					else
+						ishybrid = "0";
+					//구매처리
+					boolean result = connection.buyVehicles(vehicleNumber, orderdate, buyerId, model, detailed_model, price, model_year, fuel, color, ishybrid);
+					if(result)
+					{
+						JOptionPane.showMessageDialog(null, "구매하였습니다.");
+						
+						//테이블 새로고침
+						data = connection.selectVehicles(isAdmin);
+						
+						if(isAdmin)//관리자 모드일땐 공개여부도 추가
+						{
+							String[] temp2 = {"차량 번호","주행거리(km)","모델","세부모델","가격(원)","연식","연료","색상","배기량(cc)","하이브리드","공개여부","제조사","차종","연비(km)","변속기"};
+							header = new String[temp2.length];
+							for(int i=0;i<temp2.length;i++)
+								header[i] = temp2[i];
+						}
+						
+						DefaultTableModel tablemodel = new DefaultTableModel(data, header){ public boolean isCellEditable(int i, int c){ return false; } };//편집불가
+						table.setModel(tablemodel);
+						
+						table.setRowHeight(40);
+						table.getTableHeader().setReorderingAllowed(false); // 컬럼들 이동 불가
+					    table.getTableHeader().setResizingAllowed(false); // 컬럼 크기 조절 불가
+						
+					    table.getColumn("차량 번호").setPreferredWidth(50);
+					    table.getColumn("배기량(cc)").setPreferredWidth(80);
+					    table.getColumn("연료").setPreferredWidth(100);
+					    table.getColumn("연비(km)").setPreferredWidth(50);
+					    
+						table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);//단일 선택모드
+						return ;
+					}
+					else
+					{
+						JOptionPane.showMessageDialog(null, "구매실패");
+						return ;
+					}
 				}
 				else
 				{
@@ -260,7 +322,52 @@ public class VehicleTable extends JFrame{
 			}
 			else if(event.getSource()==search)//검색
 			{
+				//테이블 검색
+				if(!make.getSelectedItem().toString().equals("전체"))
+				{	
+					if(!model.getSelectedItem().toString().equals("전체"))
+					{
+						if(!detailed_model.getSelectedItem().toString().equals("전체"))
+						{
+							data = connection.selectVehiclesByModelname(model.getSelectedItem().toString(), detailed_model.getSelectedItem().toString(), isAdmin);
+						}
+						else
+						{
+							data = connection.selectVehiclesByModelname(model.getSelectedItem().toString(), isAdmin);
+						}
+					}
+					else
+					{
+						data = connection.selectVehicles(make.getSelectedItem().toString(), isAdmin);
+					}
 				
+				}
+				else
+				{
+					data = connection.selectVehicles(isAdmin);
+				}
+				
+				if(isAdmin)//관리자 모드일땐 공개여부도 추가
+				{
+					String[] temp2 = {"차량 번호","주행거리(km)","모델","세부모델","가격(원)","연식","연료","색상","배기량(cc)","하이브리드","공개여부","제조사","차종","연비(km)","변속기"};
+					header = new String[temp2.length];
+					for(int i=0;i<temp2.length;i++)
+						header[i] = temp2[i];
+				}
+				
+				DefaultTableModel tablemodel = new DefaultTableModel(data, header){ public boolean isCellEditable(int i, int c){ return false; } };//편집불가
+				table.setModel(tablemodel);
+				
+				table.setRowHeight(40);
+				table.getTableHeader().setReorderingAllowed(false); // 컬럼들 이동 불가
+			    table.getTableHeader().setResizingAllowed(false); // 컬럼 크기 조절 불가
+				
+			    table.getColumn("차량 번호").setPreferredWidth(50);
+			    table.getColumn("배기량(cc)").setPreferredWidth(80);
+			    table.getColumn("연료").setPreferredWidth(100);
+			    table.getColumn("연비(km)").setPreferredWidth(50);
+			    
+				table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);//단일 선택모드
 			}
 		}
 	}

@@ -18,181 +18,308 @@ public class DBConnection {
 	{
 	
 	}
-	// 2-B (classify makename)
-		public static String[][] selectVehiclesByMakename(String makename, boolean isAdmin)
-		{
-			String[][] result = null;
-			
-			connect();
-			
-			try
-			{
-				String sql;
-	            // print makename X
-				if(!isAdmin)
-					sql = "SELECT V.serialnumber, V.mileage, V.modelname, V.detailedmodelname, " + 
-	                    "V.price, V.model_year, V.fuelname, V.colorname, V.capacity, V.ishybrid, " +
-	                    "m.makename, d.categoryname, d.fuelefficiency, d.transmissionname " + 
-	                    "from vehicle V, detailed_model D, model M " + 
-	                    "where V.modelname = D.modelname AND " + 
-	                    "V.detailedmodelname = D.detailedmodelname AND " + 
-	                    "D.modelname = M.modelname AND " + 
-	                    "M.makename = " + makename + " AND " +
-	                    "V.isopen = '1'";
-				else
-					sql = "SELECT V.serialnumber, V.mileage, V.modelname, V.detailedmodelname, " + 
-	                    "V.price, V.model_year, V.fuelname, V.colorname, V.capacity, V.ishybrid, " +
-	                    "V.isopen, m.makename, dm.categoryname, dm.fuelefficiency, dm.transmissionname " + 
-	                    "from vehicle V, detailed_model D, model M " + 
-	                    "where V.modelname = D.modelname AND " + 
-	                    "V.detailedmodelname = D.detailedmodelname AND " + 
-	                    "D.modelname = M.modelname AND " + 
-	                    "M.makename = " + makename; 
-				ResultSet rs = stmt.executeQuery(sql);
-				int i=0;
-				ResultSetMetaData rsmd = rs.getMetaData();
-				
-				rs.last();
-				int column = rsmd.getColumnCount();
-				
-				if(!isAdmin)
-					column-=1;
-				
-				result = new String[rs.getRow()][column];
-				rs.beforeFirst();
-				while(rs.next())
-				{
-				
-					for(int j=0;j<column;j++)
-					{
-						//System.out.println(rs.getString(j+1));
-						if(j==5)
-						{
-							StringTokenizer strtok = new StringTokenizer(rs.getString(j+1)," ");
-							result[i][j] = strtok.nextToken();
-						}
-						else if(j==9)
-						{
-							if(rs.getString(j+1).equals("1"))
-								result[i][j] = "O";
-							else
-								result[i][j] = "X";
-						}	
-						else
-						{
-							result[i][j] = rs.getString(j+1);
-						}
-						
-						if(j==10 && isAdmin==true)
-						{
-							if(rs.getString(j+1).equals("1"))
-								result[i][j] = "O";
-							else
-								result[i][j] = "X";
-						}
-					}
-					i++;
-	                //System.out.println(result[i][j]);
-				}
-					
-				rs.close();
-				
-			}
-			catch(Exception e)
-			{
-				e.printStackTrace();
-			}
-			
-			disconnect();
-			
-			return result;
-		}
+	
+	// 2-E (vehicle->order_list)
+	public static boolean buyVehicles(String serialnumber, String orderdate, String buyerId, String model, String detailed_model, String price, String model_year, String fuel, String color, String ishybrid)
+	{
+		connect();
+		
+		boolean result = false;
 
-	    // 2-F (classify modelname&detailedmodelname)
-		public static String[][] selectVehiclesBymodelname(String modelname, String detailedmodelname, boolean isAdmin)
+		try
 		{
-			String[][] result = null;
+            // delete from vehicle
+			String sql = "DELETE FROM VEHICLE WHERE SerialNumber = '"+serialnumber+"'";
+			int res = stmt.executeUpdate(sql);
 			
-			connect();
+			sql = "select MAX(TO_NUMBER(ORDERNUMBER)) FROM ORDER_LIST";
+			ResultSet rs = stmt.executeQuery(sql);
+			rs.next();
+            // find OrderNumber
 			
-			try
-			{
-				String sql;
-	            // print makename X
-				if(!isAdmin)
-					sql = "SELECT V.serialnumber, V.mileage, V.modelname, V.detailedmodelname, " + 
-	                    "V.price, V.model_year, V.fuelname, V.colorname, V.capacity, V.ishybrid, " +
-	                    "m.makename, d.categoryname, d.fuelefficiency, d.transmissionname " + 
-	                    "from vehicle V, detailed_model D, model M  " + 
-	                    "where V.modelname = " + modelname + " AND " +
-	                    "V.detailedmodelname = " + detailedmodelname + " AND D.detailedmodelname = V.detailedmodelname AND M.modelname = V.modelname AND " +
-	                    "V.isopen = '1'";
-				else
-					sql = "SELECT V.serialnumber, V.mileage, V.modelname, V.detailedmodelname, " + 
-	                    "V.price, V.model_year, V.fuelname, V.colorname, V.capacity, V.ishybrid, " +
-	                    "V.isopen , m.makename, d.categoryname, d.fuelefficiency, d.transmissionname " + 
-	                    "from vehicle V , detailed_model D, model M  " + 
-	                    "where V.modelname = " + modelname + " AND " +
-	                    "V.detailedmodelname = " + detailedmodelname+ " AND D.detailedmodelname = V.detailedmodelname AND M.modelname = V.modelname"; 
-				ResultSet rs = stmt.executeQuery(sql);
-				int i=0;
-				ResultSetMetaData rsmd = rs.getMetaData();
-				
-				rs.last();
-				int column = rsmd.getColumnCount();
-				
-				if(!isAdmin)
-					column-=1;
-				
-				result = new String[rs.getRow()][column];
-				rs.beforeFirst();
-				while(rs.next())
-				{
-				
-					for(int j=0;j<column;j++)
-					{
-						//System.out.println(rs.getString(j+1));
-						if(j==5)
-						{
-							StringTokenizer strtok = new StringTokenizer(rs.getString(j+1)," ");
-							result[i][j] = strtok.nextToken();
-						}
-						else if(j==9)
-						{
-							if(rs.getString(j+1).equals("1"))
-								result[i][j] = "O";
-							else
-								result[i][j] = "X";
-						}	
-						else
-						{
-							result[i][j] = rs.getString(j+1);
-						}
-						
-						if(j==10 && isAdmin==true)
-						{
-							if(rs.getString(j+1).equals("1"))
-								result[i][j] = "O";
-							else
-								result[i][j] = "X";
-						}
-					}
-					i++;
-	                //System.out.println(result[i][j]);
-				}
-					
-				rs.close();
-				
-			}
-			catch(Exception e)
-			{
-				e.printStackTrace();
-			}
-			
-			disconnect();
-			
-			return result;
+            int ordernumber = rs.getInt(1)+1;
+            System.out.println("ordernumber"+ordernumber);
+            // insert into order_list
+			sql = "INSERT INTO order_list VALUES('"+ordernumber+"', "+orderdate+", '"+buyerId+"', '"+model+"', '"+detailed_model+"', "+price+", "+model_year+", '"+fuel+"', '"+color+"', '"+ishybrid+"')";
+			res = stmt.executeUpdate(sql);
+
+			if(res > 0){ 
+				result=true;
+				System.out.println("Tuple was successfully updated.");
+			}else
+				result=false;
+
+			conn.commit();
 		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+		return result;
+	}
+	// 2-B (classify makename)
+	public static String[][] selectVehicles(String makename, boolean isAdmin)
+	{
+		String[][] result = null;
+			
+		connect();
+			
+		try
+		{
+			String sql;
+	        // print makename X
+			if(!isAdmin)
+				sql = "SELECT V.serialnumber, V.mileage, V.modelname, V.detailedmodelname, " + 
+	                  "V.price, V.model_year, V.fuelname, V.colorname, V.capacity, V.ishybrid, " +
+	                  "m.makename, d.categoryname, d.fuelefficiency, d.transmissionname " + 
+	                  "from vehicle V, detailed_model D, model M " + 
+	                  "where V.modelname = D.modelname AND " + 
+	                  "V.detailedmodelname = D.detailedmodelname AND " + 
+	                  "D.modelname = M.modelname AND " + 
+	                  "M.makename = '" + makename + "' AND " +
+	                  "V.isopen = '1' ORDER BY TO_NUMBER(v.serialnumber) ASC";
+			else
+				sql = "SELECT V.serialnumber, V.mileage, V.modelname, V.detailedmodelname, " + 
+	                  "V.price, V.model_year, V.fuelname, V.colorname, V.capacity, V.ishybrid, " +
+	                  "V.isopen, m.makename, dm.categoryname, dm.fuelefficiency, dm.transmissionname " + 
+	                  "from vehicle V, detailed_model D, model M " + 
+	                  "where V.modelname = D.modelname AND " + 
+	                  "V.detailedmodelname = D.detailedmodelname AND " + 
+	                  "D.modelname = M.modelname AND " + 
+	                  "M.makename = '" + makename+"' ORDER BY TO_NUMBER(v.serialnumber) ASC"; 
+			ResultSet rs = stmt.executeQuery(sql);
+			int i=0;
+			ResultSetMetaData rsmd = rs.getMetaData();
+				
+			rs.last();
+			int column = rsmd.getColumnCount();
+				
+			if(!isAdmin)
+				column-=1;
+				
+			result = new String[rs.getRow()][column];
+			rs.beforeFirst();
+			while(rs.next())
+			{
+			
+				for(int j=0;j<column;j++)
+				{
+					//System.out.println(rs.getString(j+1));
+					if(j==5)
+					{
+						StringTokenizer strtok = new StringTokenizer(rs.getString(j+1)," ");
+						result[i][j] = strtok.nextToken();
+					}
+					else if(j==9)
+					{
+						if(rs.getString(j+1).equals("1"))
+							result[i][j] = "O";
+						else
+							result[i][j] = "X";
+					}	
+					else
+					{
+						result[i][j] = rs.getString(j+1);
+					}
+						
+					if(j==10 && isAdmin==true)
+					{
+						if(rs.getString(j+1).equals("1"))
+							result[i][j] = "O";
+						else
+							result[i][j] = "X";
+					}
+				}
+				i++;
+	               //System.out.println(result[i][j]);
+			}
+					
+			rs.close();
+			
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+			
+		disconnect();
+		
+		return result;
+	}
+	// 2-F (classify modelname&detailedmodelname)
+	public static String[][] selectVehiclesByModelname(String modelname, boolean isAdmin)
+	{
+		String[][] result = null;
+		
+		connect();
+		
+		try
+		{
+			String sql;
+	           // print makename X
+			if(!isAdmin)
+				sql = "SELECT V.serialnumber, V.mileage, V.modelname, V.detailedmodelname, " + 
+	                  "V.price, V.model_year, V.fuelname, V.colorname, V.capacity, V.ishybrid, " +
+	                  "m.makename, d.categoryname, d.fuelefficiency, d.transmissionname " + 
+	                  "from vehicle V, detailed_model D, model M  " + 
+	                  "where V.modelname = '" + modelname + "' AND " +
+	                  " D.detailedmodelname = V.detailedmodelname AND M.modelname = V.modelname AND " +
+	                  "V.isopen = '1' ORDER BY TO_NUMBER(v.serialnumber) ASC";
+			else
+				sql = "SELECT V.serialnumber, V.mileage, V.modelname, V.detailedmodelname, " + 
+	                   "V.price, V.model_year, V.fuelname, V.colorname, V.capacity, V.ishybrid, " +
+	                   "V.isopen , m.makename, d.categoryname, d.fuelefficiency, d.transmissionname " + 
+	                   "from vehicle V , detailed_model D, model M  " + 
+	                   "where V.modelname = '" + modelname + "' AND " +
+	                   "D.detailedmodelname = V.detailedmodelname AND M.modelname = V.modelname ORDER BY TO_NUMBER(v.serialnumber) ASC"; 
+			ResultSet rs = stmt.executeQuery(sql);
+			int i=0;
+			ResultSetMetaData rsmd = rs.getMetaData();
+			
+			rs.last();
+			int column = rsmd.getColumnCount();
+			
+			if(!isAdmin)
+				column-=1;
+					
+			result = new String[rs.getRow()][column];
+			rs.beforeFirst();
+			while(rs.next())
+			{
+			
+				for(int j=0;j<column;j++)
+				{
+					//System.out.println(rs.getString(j+1));
+					if(j==5)
+					{
+						StringTokenizer strtok = new StringTokenizer(rs.getString(j+1)," ");
+						result[i][j] = strtok.nextToken();
+					}
+					else if(j==9)
+					{
+						if(rs.getString(j+1).equals("1"))
+							result[i][j] = "O";
+						else								
+							result[i][j] = "X";
+					}	
+					else
+					{
+						result[i][j] = rs.getString(j+1);
+					}
+					
+					if(j==10 && isAdmin==true)
+					{
+						if(rs.getString(j+1).equals("1"))
+							result[i][j] = "O";
+						else
+							result[i][j] = "X";
+					}
+				}
+				i++;
+		              //System.out.println(result[i][j]);
+			}
+					
+			rs.close();
+				
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+		
+		return result;
+	}
+	
+	// 2-F (classify modelname&detailedmodelname)
+	public static String[][] selectVehiclesByModelname(String modelname, String detailedmodelname, boolean isAdmin)
+	{
+		String[][] result = null;
+		
+		connect();
+		
+		try
+		{
+			String sql;
+	           // print makename X
+			if(!isAdmin)
+				sql = "SELECT V.serialnumber, V.mileage, V.modelname, V.detailedmodelname, " + 
+	                  "V.price, V.model_year, V.fuelname, V.colorname, V.capacity, V.ishybrid, " +
+	                  "m.makename, d.categoryname, d.fuelefficiency, d.transmissionname " + 
+	                  "from vehicle V, detailed_model D, model M  " + 
+	                  "where V.modelname = '" + modelname + "' AND " +
+	                  "V.detailedmodelname = '" + detailedmodelname + "' AND D.detailedmodelname = V.detailedmodelname AND M.modelname = V.modelname AND " +
+	                  "V.isopen = '1' ORDER BY TO_NUMBER(v.serialnumber) ASC";
+			else
+				sql = "SELECT V.serialnumber, V.mileage, V.modelname, V.detailedmodelname, " + 
+	                   "V.price, V.model_year, V.fuelname, V.colorname, V.capacity, V.ishybrid, " +
+	                   "V.isopen , m.makename, d.categoryname, d.fuelefficiency, d.transmissionname " + 
+	                   "from vehicle V , detailed_model D, model M  " + 
+	                   "where V.modelname = '" + modelname + "' AND " +
+	                   "V.detailedmodelname = '" + detailedmodelname+ "' AND D.detailedmodelname = V.detailedmodelname AND M.modelname = V.modelname ORDER BY TO_NUMBER(v.serialnumber) ASC"; 
+			ResultSet rs = stmt.executeQuery(sql);
+			int i=0;
+			ResultSetMetaData rsmd = rs.getMetaData();
+			
+			rs.last();
+			int column = rsmd.getColumnCount();
+			
+			if(!isAdmin)
+				column-=1;
+				
+			result = new String[rs.getRow()][column];
+			rs.beforeFirst();
+			while(rs.next())
+			{
+			
+				for(int j=0;j<column;j++)
+				{
+					//System.out.println(rs.getString(j+1));
+					if(j==5)
+					{
+						StringTokenizer strtok = new StringTokenizer(rs.getString(j+1)," ");
+						result[i][j] = strtok.nextToken();
+					}
+					else if(j==9)
+					{
+						if(rs.getString(j+1).equals("1"))
+							result[i][j] = "O";
+						else								
+							result[i][j] = "X";
+					}	
+					else
+					{
+						result[i][j] = rs.getString(j+1);
+					}
+					
+					if(j==10 && isAdmin==true)
+					{
+						if(rs.getString(j+1).equals("1"))
+							result[i][j] = "O";
+						else
+							result[i][j] = "X";
+					}
+				}
+				i++;
+	               //System.out.println(result[i][j]);
+			}
+				
+			rs.close();
+			
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+		
+		return result;
+	}
+	
 	public static String[] selectMakes()
 	{
 		String[] result=null;
@@ -597,9 +724,9 @@ public class DBConnection {
 		{
 			String sql;
 			if(!isAdmin)//고객일때
-				sql = "SELECT v.serialnumber, v.mileage, v.modelname, v.detailedmodelname, v.price, v.model_year, v.fuelname, v.colorname, v.capacity, v.ishybrid, v.isopen, m.makename, dm.categoryname, dm.fuelefficiency, dm.transmissionname FROM VEHICLE V, DETAILED_MODEL DM, MODEL M WHERE V.MODELNAME = M.MODELNAME AND V.DETAILEDMODELNAME = DM.DETAILEDMODELNAME AND V.MODELNAME = DM.MODELNAME AND V.ISOPEN ='1' ORDER BY v.serialnumber ASC";//공개처리된애들만 불러옴
+				sql = "SELECT v.serialnumber, v.mileage, v.modelname, v.detailedmodelname, v.price, v.model_year, v.fuelname, v.colorname, v.capacity, v.ishybrid, v.isopen, m.makename, dm.categoryname, dm.fuelefficiency, dm.transmissionname FROM VEHICLE V, DETAILED_MODEL DM, MODEL M WHERE V.MODELNAME = M.MODELNAME AND V.DETAILEDMODELNAME = DM.DETAILEDMODELNAME AND V.MODELNAME = DM.MODELNAME AND V.ISOPEN ='1' ORDER BY TO_NUMBER(v.serialnumber) ASC";//공개처리된애들만 불러옴
 			else//관리자일땐 전체 다불러옴
-				sql = "SELECT v.serialnumber, v.mileage, v.modelname, v.detailedmodelname, v.price, v.model_year, v.fuelname, v.colorname, v.capacity, v.ishybrid, v.isopen, m.makename, dm.categoryname, dm.fuelefficiency, dm.transmissionname FROM VEHICLE V, DETAILED_MODEL DM, MODEL M WHERE V.MODELNAME = M.MODELNAME AND V.DETAILEDMODELNAME = DM.DETAILEDMODELNAME AND V.MODELNAME = DM.MODELNAME ORDER BY v.serialnumber ASC";
+				sql = "SELECT v.serialnumber, v.mileage, v.modelname, v.detailedmodelname, v.price, v.model_year, v.fuelname, v.colorname, v.capacity, v.ishybrid, v.isopen, m.makename, dm.categoryname, dm.fuelefficiency, dm.transmissionname FROM VEHICLE V, DETAILED_MODEL DM, MODEL M WHERE V.MODELNAME = M.MODELNAME AND V.DETAILEDMODELNAME = DM.DETAILEDMODELNAME AND V.MODELNAME = DM.MODELNAME ORDER BY TO_NUMBER(v.serialnumber) ASC";
 			ResultSet rs = stmt.executeQuery(sql);
 			int i=0;
 			ResultSetMetaData rsmd = rs.getMetaData();
