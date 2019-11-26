@@ -88,7 +88,7 @@ public class DBConnection {
 				middle+=" ) ";
 			
 			if(!isAdmin)//고객일때
-				sql = "SELECT v.serialnumber, v.mileage, v.modelname, v.detailedmodelname, v.price, v.model_year, v.fuelname, v.colorname, v.capacity, v.ishybrid, v.isopen, m.makename, dm.categoryname, dm.fuelefficiency, dm.transmissionname FROM VEHICLE V, DETAILED_MODEL DM, MODEL M WHERE V.MODELNAME = M.MODELNAME AND V.DETAILEDMODELNAME = DM.DETAILEDMODELNAME AND V.MODELNAME = DM.MODELNAME AND "+middle+"  V.ISOPEN ='1' ORDER BY TO_NUMBER(v.serialnumber) ASC";//공개처리된애들만 불러옴
+				sql = "SELECT v.serialnumber, v.mileage, v.modelname, v.detailedmodelname, v.price, v.model_year, v.fuelname, v.colorname, v.capacity, v.ishybrid, m.makename, dm.categoryname, dm.fuelefficiency, dm.transmissionname FROM VEHICLE V, DETAILED_MODEL DM, MODEL M WHERE V.MODELNAME = M.MODELNAME AND V.DETAILEDMODELNAME = DM.DETAILEDMODELNAME AND V.MODELNAME = DM.MODELNAME AND "+middle+"  V.ISOPEN ='1' ORDER BY TO_NUMBER(v.serialnumber) ASC";//공개처리된애들만 불러옴
 			else//관리자일땐 전체 다불러옴
 				sql = "SELECT v.serialnumber, v.mileage, v.modelname, v.detailedmodelname, v.price, v.model_year, v.fuelname, v.colorname, v.capacity, v.ishybrid, v.isopen, m.makename, dm.categoryname, dm.fuelefficiency, dm.transmissionname FROM VEHICLE V, DETAILED_MODEL DM, MODEL M WHERE V.MODELNAME = M.MODELNAME AND V.DETAILEDMODELNAME = DM.DETAILEDMODELNAME AND V.MODELNAME = DM.MODELNAME AND "+middle+ " ORDER BY TO_NUMBER(v.serialnumber) ASC";
 			
@@ -119,8 +119,8 @@ public class DBConnection {
 			rs.last();
 			int column = rsmd.getColumnCount();
 			
-			if(!isAdmin)//고객모드때
-				column-=1;
+		//	if(!isAdmin)//고객모드때
+		//		column-=1;
 			
 			result = new String[rs.getRow()][column];
 			rs.beforeFirst();
@@ -129,7 +129,7 @@ public class DBConnection {
 			
 				for(int j=0;j<column;j++)
 				{
-					System.out.println(rs.getString(j+1));
+					//System.out.println(rs.getString(j+1));
 					if(j==5)
 					{
 						StringTokenizer strtok = new StringTokenizer(rs.getString(j+1)," ");
