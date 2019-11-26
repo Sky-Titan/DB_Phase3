@@ -377,6 +377,30 @@ public class VehicleTable extends JFrame{
 			else if(event.getSource()==condition_search)//조건별 검색
 			{
 				new ConditionSearch(id, isAdmin, table);
+				make.setSelectedItem("전체");
+				data = connection.selectVehicles(isAdmin);
+				if(isAdmin)//관리자 모드일땐 공개여부도 추가
+				{
+					String[] temp2 = {"차량 번호","주행거리(km)","모델","세부모델","가격(원)","연식","연료","색상","배기량(cc)","하이브리드","공개여부","제조사","차종","연비(km)","변속기"};
+					header = new String[temp2.length];
+					for(int i=0;i<temp2.length;i++)
+						header[i] = temp2[i];
+				}
+				
+				DefaultTableModel tablemodel = new DefaultTableModel(data, header){ public boolean isCellEditable(int i, int c){ return false; } };//편집불가
+				table.setModel(tablemodel);
+				
+				table.setRowHeight(40);
+				table.getTableHeader().setReorderingAllowed(false); // 컬럼들 이동 불가
+			    table.getTableHeader().setResizingAllowed(false); // 컬럼 크기 조절 불가
+				
+			    table.getColumn("차량 번호").setPreferredWidth(50);
+			    table.getColumn("배기량(cc)").setPreferredWidth(80);
+			    table.getColumn("연료").setPreferredWidth(100);
+			    table.getColumn("연비(km)").setPreferredWidth(50);
+			    
+				table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+				
 			}
 		}
 	}

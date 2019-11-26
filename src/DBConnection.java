@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
@@ -19,6 +20,160 @@ public class DBConnection {
 	public DBConnection()
 	{
 	
+	}
+	
+	// 2-C 회원은 로그인 이후 특정 조건으로 차량 검색 가능
+    // input : category color fuelname modelname detailedmodelname trasmissionname
+    // output : all option of vehicle
+	public static String[][] voptionBy(boolean isAdmin,ArrayList<String> category, ArrayList<String> color, ArrayList<String> capacity, ArrayList<String> fuelname, ArrayList<String> modelname, ArrayList<String>detailedmodelname, ArrayList<String> transmissionname)
+	{
+		connect();
+		
+		String[][] result=null;
+		String middle="";
+		
+		ArrayList[] list = new ArrayList[7];
+		list[0] = category;
+		list[1] = color;
+		list[2] = capacity;
+		list[3] = fuelname;
+		list[4] = modelname;
+		list[5] = detailedmodelname;
+		list[6] = transmissionname;
+		try
+		{
+			String sql="";
+			// print makename X
+			int count=0;
+			middle+=" ( ";
+			for(int i=0;i<7;i++)
+			{
+				if(list[i].size()==0)
+					continue;
+				else
+					count++;
+				if(count>1)
+					middle +=" AND ";
+
+				middle+=" ( ";
+				String valuename="";
+				if(i==0)
+					valuename = " Dm.CATEGORYNAME ";
+				else if(i==1)
+					valuename = " V.COLORNAME ";
+				else if(i==2)
+					valuename = " V.CAPACITY ";
+				else if(i==3)
+					valuename = " V.FUELNAME ";
+				else if(i==4)
+					valuename = " V.MODELNAME ";
+				else if(i==5)
+					valuename = " V.DETAILEDMODELNAME ";
+				else if(i==6)
+					valuename = " Dm.TRANSMISSIONNAME ";
+				for(int j=0;j<list[i].size();j++)
+				{
+					if(j!=0)
+						middle += " OR ";
+					if(i!=2)
+						middle += valuename+"='"+list[i].get(j)+"'";
+					else
+						middle += valuename+"="+list[i].get(j);
+				}
+				middle+=" ) ";
+			}
+			if(!isAdmin)
+				middle+=" ) AND ";
+			else
+				middle+=" ) ";
+			
+			if(!isAdmin)//고객일때
+				sql = "SELECT v.serialnumber, v.mileage, v.modelname, v.detailedmodelname, v.price, v.model_year, v.fuelname, v.colorname, v.capacity, v.ishybrid, v.isopen, m.makename, dm.categoryname, dm.fuelefficiency, dm.transmissionname FROM VEHICLE V, DETAILED_MODEL DM, MODEL M WHERE V.MODELNAME = M.MODELNAME AND V.DETAILEDMODELNAME = DM.DETAILEDMODELNAME AND V.MODELNAME = DM.MODELNAME AND "+middle+"  V.ISOPEN ='1' ORDER BY TO_NUMBER(v.serialnumber) ASC";//공개처리된애들만 불러옴
+			else//관리자일땐 전체 다불러옴
+				sql = "SELECT v.serialnumber, v.mileage, v.modelname, v.detailedmodelname, v.price, v.model_year, v.fuelname, v.colorname, v.capacity, v.ishybrid, v.isopen, m.makename, dm.categoryname, dm.fuelefficiency, dm.transmissionname FROM VEHICLE V, DETAILED_MODEL DM, MODEL M WHERE V.MODELNAME = M.MODELNAME AND V.DETAILEDMODELNAME = DM.DETAILEDMODELNAME AND V.MODELNAME = DM.MODELNAME AND "+middle+ " ORDER BY TO_NUMBER(v.serialnumber) ASC";
+			
+		/*	if(!isAdmin)
+					sql = "SELECT V.serialnumber, V.mileage, V.modelname, V.detailedmodelname, " + 
+			              "V.price, V.model_year, V.fuelname, V.colorname, V.capacity, V.ishybrid, " +
+				          "m.makename, d.categoryname, d.fuelefficiency, d.transmissionname " + 
+				          "from vehicle V, detailed_model D, model M " + 
+				          "where V.modelname = D.modelname AND " + 
+				          "V.detailedmodelname = D.detailedmodelname AND " + 
+				          "D.modelname = M.modelname AND " + middle +
+				          " V.isopen = '1' ORDER BY TO_NUMBER(v.serialnumber) ASC";
+			else
+					sql = "SELECT V.serialnumber, V.mileage, V.modelname, V.detailedmodelname, " + 
+				          "V.price, V.model_year, V.fuelname, V.colorname, V.capacity, V.ishybrid, " +
+				          "V.isopen, m.makename, d.categoryname, d.fuelefficiency, d.transmissionname " + 
+				          "from vehicle V, detailed_model D, model M " + 
+				          "where V.modelname = D.modelname AND " + 
+				          "V.detailedmodelname = D.detailedmodelname AND " + 
+				          "D.modelname = M.modelname AND " + middle +
+				          " ORDER BY TO_NUMBER(v.serialnumber) ASC"; */
+			
+			System.out.println("sql문 : "+sql);
+			ResultSet rs = stmt.executeQuery(sql);
+			int i=0;
+			ResultSetMetaData rsmd = rs.getMetaData();
+			
+			rs.last();
+			int column = rsmd.getColumnCount();
+			
+			if(!isAdmin)//고객모드때
+				column-=1;
+			
+			result = new String[rs.getRow()][column];
+			rs.beforeFirst();
+			while(rs.next())
+			{
+			
+				for(int j=0;j<column;j++)
+				{
+					System.out.println(rs.getString(j+1));
+					if(j==5)
+					{
+						StringTokenizer strtok = new StringTokenizer(rs.getString(j+1)," ");
+						result[i][j] = strtok.nextToken();
+					}
+					else if(j==9)
+					{
+						if(rs.getString(j+1).equals("1"))
+							result[i][j] = "O";
+						else
+							result[i][j] = "X";
+					}	
+					else
+					{
+						result[i][j] = rs.getString(j+1);
+					}
+					
+					if(j==10 && isAdmin==true)//공개여부는 관리자일때만
+					{
+						if(rs.getString(j+1).equals("1"))
+							result[i][j] = "O";
+						else
+							result[i][j] = "X";
+					}
+					
+					
+				}
+				i++;
+			
+			
+			}
+            /*
+			if(res > 0){ result=true; }
+			else	result=false;
+            */
+			conn.commit();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		disconnect();
+		return result;
 	}
 	// 3-D (search total_sales by year, month, makename)
     // input : year, month, makename
@@ -329,8 +484,8 @@ public class DBConnection {
 			rs.last();
 			int column = rsmd.getColumnCount();
 				
-			if(!isAdmin)
-				column-=1;
+		//	if(!isAdmin)
+		//		column-=1;
 				
 			result = new String[rs.getRow()][column];
 			rs.beforeFirst();
@@ -414,8 +569,8 @@ public class DBConnection {
 			rs.last();
 			int column = rsmd.getColumnCount();
 			
-			if(!isAdmin)
-				column-=1;
+		//	if(!isAdmin)
+		//		column-=1;
 					
 			result = new String[rs.getRow()][column];
 			rs.beforeFirst();
@@ -500,8 +655,8 @@ public class DBConnection {
 			rs.last();
 			int column = rsmd.getColumnCount();
 			
-			if(!isAdmin)
-				column-=1;
+		//	if(!isAdmin)
+		//		column-=1;
 				
 			result = new String[rs.getRow()][column];
 			rs.beforeFirst();
@@ -1032,7 +1187,7 @@ public class DBConnection {
 		{
 			String sql;
 			if(!isAdmin)//고객일때
-				sql = "SELECT v.serialnumber, v.mileage, v.modelname, v.detailedmodelname, v.price, v.model_year, v.fuelname, v.colorname, v.capacity, v.ishybrid, v.isopen, m.makename, dm.categoryname, dm.fuelefficiency, dm.transmissionname FROM VEHICLE V, DETAILED_MODEL DM, MODEL M WHERE V.MODELNAME = M.MODELNAME AND V.DETAILEDMODELNAME = DM.DETAILEDMODELNAME AND V.MODELNAME = DM.MODELNAME AND V.ISOPEN ='1' ORDER BY TO_NUMBER(v.serialnumber) ASC";//공개처리된애들만 불러옴
+				sql = "SELECT v.serialnumber, v.mileage, v.modelname, v.detailedmodelname, v.price, v.model_year, v.fuelname, v.colorname, v.capacity, v.ishybrid, m.makename, dm.categoryname, dm.fuelefficiency, dm.transmissionname FROM VEHICLE V, DETAILED_MODEL DM, MODEL M WHERE V.MODELNAME = M.MODELNAME AND V.DETAILEDMODELNAME = DM.DETAILEDMODELNAME AND V.MODELNAME = DM.MODELNAME AND V.ISOPEN ='1' ORDER BY TO_NUMBER(v.serialnumber) ASC";//공개처리된애들만 불러옴
 			else//관리자일땐 전체 다불러옴
 				sql = "SELECT v.serialnumber, v.mileage, v.modelname, v.detailedmodelname, v.price, v.model_year, v.fuelname, v.colorname, v.capacity, v.ishybrid, v.isopen, m.makename, dm.categoryname, dm.fuelefficiency, dm.transmissionname FROM VEHICLE V, DETAILED_MODEL DM, MODEL M WHERE V.MODELNAME = M.MODELNAME AND V.DETAILEDMODELNAME = DM.DETAILEDMODELNAME AND V.MODELNAME = DM.MODELNAME ORDER BY TO_NUMBER(v.serialnumber) ASC";
 			ResultSet rs = stmt.executeQuery(sql);
@@ -1042,8 +1197,8 @@ public class DBConnection {
 			rs.last();
 			int column = rsmd.getColumnCount();
 			
-			if(!isAdmin)//고객모드때
-				column-=1;
+		//	if(!isAdmin)//고객모드때
+		//		column-=1;
 			
 			result = new String[rs.getRow()][column];
 			rs.beforeFirst();
