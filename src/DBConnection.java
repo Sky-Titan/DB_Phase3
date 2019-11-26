@@ -1114,8 +1114,68 @@ public class DBConnection {
 			disconnect();
 			return result;
 		}
+		//거래내역불러오기
+		public static String[][] selectOrderlist()
+		{
+			String[][] result = null;
+			
+			connect();
+			
+			try
+			{
+				String sql;
+			
+					sql = "SELECT * FROM ORDER_LIST";
+		
+				
+				ResultSet rs = stmt.executeQuery(sql);
+				int i=0;
+				ResultSetMetaData rsmd = rs.getMetaData();
+				
+				rs.last();
+				
+				result = new String[rs.getRow()][rsmd.getColumnCount()];
+				rs.beforeFirst();
+				while(rs.next())
+				{
+					for(int j=0;j<rsmd.getColumnCount();j++)
+					{
+						if(j==6 || j==1)
+						{
+							//System.out.println(rs.getString(j+1));
+							StringTokenizer strtok = new StringTokenizer(rs.getString(j+1)," ");
+							result[i][j] = strtok.nextToken();
+						}
+						else if(j==9)
+						{
+							//System.out.println(rs.getString(j+1));
+							if(rs.getString(j+1).equals("1"))
+								result[i][j] = "O";
+							else
+								result[i][j] = "X";
+						}
+						else
+						{
+							//System.out.println(rs.getString(j+1));
+							result[i][j] = rs.getString(j+1);
+						}
+					}
+					i++;
+				}
+				rs.close();
+				
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+			
+			disconnect();
+			
+			return result;
+		}
 	//거래내역불러오기
-	public static String[][] selectOrderlist(String id, boolean isAdmin)
+	public static String[][] selectOrderlist(String id)
 	{
 		String[][] result = null;
 		
@@ -1124,9 +1184,7 @@ public class DBConnection {
 		try
 		{
 			String sql;
-			if(isAdmin)//관리자인 경우
-				sql = "SELECT * FROM ORDER_LIST";
-			else//고객인 경우
+		
 				sql = "SELECT * FROM ORDER_LIST WHERE BUYERID ='"+id+"'";
 			
 			ResultSet rs = stmt.executeQuery(sql);

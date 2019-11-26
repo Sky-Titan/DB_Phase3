@@ -22,7 +22,7 @@ public class OrderlistTable extends JFrame{
 	private JTable table;
 	private JScrollPane scrollPane;
 	private JButton back;
-
+	private JButton admin_order_btn, all_order_btn;
 	private JButton sales_btn;
 
 	
@@ -53,13 +53,26 @@ public class OrderlistTable extends JFrame{
 		
 		if(isAdmin)
 		{
+			all_order_btn = new JButton("전체 거래내역 보기");
+			all_order_btn.setBounds(1100-310-160-160, 30, 150, 30);
+			add(all_order_btn);
+			all_order_btn.addActionListener(h);
+			
+			admin_order_btn = new JButton("관리자 개인 거래내역 보기");
+			admin_order_btn.setBounds(1100-310-160, 30, 150, 30);
+			add(admin_order_btn);
+			admin_order_btn.addActionListener(h);
+			
 			sales_btn = new JButton("매출액 보기");
 			sales_btn.setBounds(1100-310, 30, 150, 30);
 			add(sales_btn);
 			sales_btn.addActionListener(h);
+			
+			data = connection.selectOrderlist();
 		}
 		
-		data = connection.selectOrderlist(id, isAdmin);
+		else
+		data = connection.selectOrderlist(id);
 		
 		DefaultTableModel model = new DefaultTableModel(data, header){ public boolean isCellEditable(int i, int c){ return false; } };//편집불가
 		
@@ -93,6 +106,35 @@ public class OrderlistTable extends JFrame{
 			{
 				new ShowSales(id, isAdmin);
 				dispose();
+			}
+			else if(event.getSource()==all_order_btn)//전체 거래내역
+			{
+				DBConnection connection = new DBConnection();
+				data = connection.selectOrderlist();
+				
+				DefaultTableModel model = new DefaultTableModel(data, header){ public boolean isCellEditable(int i, int c){ return false; } };//편집불가
+				
+				table.setModel(model);
+				table.setRowHeight(40);
+				table.getTableHeader().setReorderingAllowed(false); // 컬럼들 이동 불가
+			    table.getTableHeader().setResizingAllowed(false); // 컬럼 크기 조절 불가
+				
+				table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			}
+			else//관리자거래내역
+			{
+				DBConnection connection = new DBConnection();
+				data = connection.selectOrderlist(id);
+				
+				DefaultTableModel model = new DefaultTableModel(data, header){ public boolean isCellEditable(int i, int c){ return false; } };//편집불가
+				
+				table.setModel(model);
+				table.setRowHeight(40);
+				table.getTableHeader().setReorderingAllowed(false); // 컬럼들 이동 불가
+			    table.getTableHeader().setResizingAllowed(false); // 컬럼 크기 조절 불가
+				
+				table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);//단일 선택모드
+				
 			}
 		}
 	}
