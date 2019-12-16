@@ -153,11 +153,12 @@ public class ShowSales extends JFrame{
 				String month_result=month.getSelectedItem().toString();
 				if(!month.getSelectedItem().toString().equals("전체"))
 				{
-					if(Integer.parseInt(month.getSelectedItem().toString()) < 10)
+					if(!month_result.equals(""))
+					{if(Integer.parseInt(month.getSelectedItem().toString()) < 10)
 					{
 						month_result = "0"+month.getSelectedItem().toString();
 					}
-					
+					}
 				}
 				
 				if(makes_result.equals("전체") && year_result.equals("전체") && month_result.equals("전체")) //셋다 선택안했으면 오류메시지
